@@ -1,24 +1,46 @@
+require('dotenv').config();
 const express = require('express');
-const newsModel = require('./models/newsModel');
+const session = require('express-session');
+const passport = require('passport');
+require('./auth');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-// Middleware to parse JSON request bodies
-app.use(express.json());
+function isLoggedIn(req, res, next) {
+  req.user ? next() : res.sendStatus(401);
+}
 
-// GET endpoint to fetch all news articles
-app.get('/api/news', async (req, res) => {
-    try {
-        const news = await newsModel.getNews();
-        res.json(news);
-    } catch (err) {
-        console.error('Error:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
+app.use(session({ secret: 'cats', resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get('/', (req, res) => {
+  res.send('<a href="/auth/google">Authenticate with Google</a>');
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+app.get('/auth/google',
+  passport.authenticate('google', { scope: [ 'email', 'profile' ] }
+));
+
+app.get( '/auth/google/callback',
+  passport.authenticate( 'google', {
+    successRedirect: '/protected',
+    failureRedirect: '/auth/google/failure'
+  })
+);
+
+app.get('/protected', isLoggedIn, (req, res) => {
+  res.send(`Hello ${req.user.displayName}`);
 });
+
+app.get('/logout', (req, res) => {
+  req.logout();
+  req.session.destroy();
+  res.send('Goodbye!');
+});
+
+app.get('/auth/google/failure', (req, res) => {
+  res.send('Failed to authenticate..');
+});
+
+app.listen(5000, () => console.log('listening on port: 5000'));

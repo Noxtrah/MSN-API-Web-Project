@@ -1,17 +1,13 @@
 const sql = require('mssql');
+const sqlConnect = require('./databaseCınfig/db');
 
+
+
+// Function to get news
 async function getNews() {
     try {
-        await sql.connect({
-            server: 'your_server',
-            database: 'your_database',
-            user: 'your_username',
-            password: 'your_password',
-            options: {
-                encrypt: true   // If using Azure SQL, set to true
-            }
-        });
-        const result = await sql.query`SELECT * FROM News`;
+        const pool = await sqlConnect();
+        const result = await pool.request().query('SELECT * FROM News');
         return result.recordset;
     } catch (err) {
         console.error('Error fetching news:', err);
