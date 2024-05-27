@@ -1,5 +1,5 @@
 const sql = require('mssql');
-const sqlConnect = require('./databaseCınfig/db');
+const sqlConnect = require('./databaseConfig/db');
 
 
 
