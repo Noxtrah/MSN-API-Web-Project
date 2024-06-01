@@ -7,6 +7,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const bodyParser = require('body-parser');
 const http = require('http');
 const WebSocket = require('ws');
+const cors = require('cors');
 require('./auth');
 
 const app = express();
@@ -20,7 +21,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({ secret: 'cats', resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
-// app.use(cors());
+app.use(cors());
 
 passport.use(new LocalStrategy(
   function(username, password, done) {
