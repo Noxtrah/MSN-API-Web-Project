@@ -8,7 +8,7 @@ const sqlConnect = require('../databaseConfig/db');
 const { getNews } = require('../models/newsModel');
 // const jwtSecret = require('crypto').randomBytes(64).toString('hex');
 const { getUserByEmail } = require('../models/userModel');
-const { likeNews, dislikeNews } = require('../models/newsModel');
+const { recommendNews, likeNews, dislikeNews } = require('../models/newsModel');
 
 const router = express.Router();
 
@@ -131,6 +131,18 @@ router.get('/news', async (req, res) => {
   } catch (err) {
     console.error('Error fetching news:', err);
     res.status(500).send('Server error');
+  }
+});
+
+router.get('/recommendations', async (req, res) => {
+  const { userID } = req.query;
+  try {
+      const pool = await sqlConnect();
+      const recommendations = await recommendNews(userID, pool);
+      res.status(200).json(recommendations);
+  } catch (error) {
+      console.error('Error getting recommendations:', error);
+      res.status(500).send('Server error');
   }
 });
 
