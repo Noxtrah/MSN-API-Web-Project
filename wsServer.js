@@ -91,5 +91,5 @@ module.exports = (server) => {
     }
   }
 
-  setInterval(broadcastNewestNews, 60000);
+  setInterval(broadcastNewestNews, 600000);
 };
