@@ -8,7 +8,7 @@ const sqlConnect = require('../databaseConfig/db');
 const { getNews } = require('../models/newsModel');
 // const jwtSecret = require('crypto').randomBytes(64).toString('hex');
 const { getUserByEmail } = require('../models/userModel');
-const { recommendNews, likeNews, dislikeNews } = require('../models/newsModel');
+const { recommendNews, likeNews, dislikeNews, getCategorizedNews } = require('../models/newsModel');
 
 const router = express.Router();
 
@@ -143,6 +143,20 @@ router.get('/recommendations', async (req, res) => {
   } catch (error) {
       console.error('Error getting recommendations:', error);
       res.status(500).send('Server error');
+  }
+});
+
+router.get('/categorizedNews', async (req, res) => {
+  try {
+      const category = req.query.category;
+      if (!category) {
+          return res.status(400).send('Category query parameter is required');
+      }
+      const news = await getCategorizedNews(category);
+      res.json(news);
+  } catch (error) {
+      console.error('Error fetching categorized news:', error);
+      res.status(500).send('Internal Server Error');
   }
 });
 
