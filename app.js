@@ -23,12 +23,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(cors());
 
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    // Your authentication logic here
-  }
-));
-
 app.get('/', (req, res) => {
   res.send('<a href="/auth/google">Authenticate with Google</a>');
 });
@@ -59,9 +53,7 @@ app.get('/auth/google/failure', (req, res) => {
 });
 
 app.use(require('./routes/routes'));
-// const wsServer = require('./wsServer');
 
-// const server = require('./wsServer');
 const server = http.createServer(app); // Create an HTTP server with the Express app
 
 require('./wsServer')(server);
@@ -70,34 +62,3 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
-
-// const PORT = process.env.PORT || 5000;
-
-// const server = http.createServer(app);
-
-// // Create WebSocket server
-// const wsServer = new WebSocket.Server({ server });
-
-// wsServer.on('connection', (ws) => {
-//   console.log('Client connected');
-
-//   // Send welcome message to the client
-//   ws.send('Welcome to the chat, enjoy :)');
-
-//   // Handle messages from connected clients
-//   ws.on('message', (message) => {
-//     console.log('Received message:', message);
-//     // Process the received message
-//   });
-
-//   // Handle disconnection
-//   ws.on('close', () => {
-//     console.log('Client disconnected');
-//   });
-// });
-
-// server.listen(PORT, () => {
-//   console.log(`Server started on port ${PORT}`);
-// });
-
-// app.listen(process.env.PORT || 5000, () => console.log('listening on port:', process.env.PORT || 5000));
