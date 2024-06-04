@@ -31,15 +31,32 @@ app.get('/auth/google',
   passport.authenticate('google', { scope: [ 'email', 'profile' ] }
 ));
 
-app.get( '/auth/google/callback',
-  passport.authenticate( 'google', {
-    successRedirect: '/protected',
-    failureRedirect: '/auth/google/failure'
-  })
+// app.get( '/auth/google/callback',
+//   passport.authenticate( 'google', {
+//     successRedirect: '/protected',
+//     failureRedirect: '/auth/google/failure'
+//   })
+// );
+
+app.get('/auth/google/callback',
+  (req, res, next) => {
+    passport.authenticate('google', (err, user, info) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return res.redirect('/auth/google/failure');
+      }
+      // Construct the redirect URL with user data
+      const redirectUrl = 'http://localhost:3000?user=' + encodeURIComponent(JSON.stringify(user));
+      // Redirect to the client-side application
+      res.redirect(redirectUrl);
+    })(req, res, next);
+  }
 );
 
 app.get('/protected', isLoggedIn, (req, res) => {
-  res.send(`Hello ${req.user.displayName}`);
+  res.json(req.user);
 });
 
 app.get('/logout', (req, res) => {

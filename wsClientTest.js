@@ -10,7 +10,7 @@ ws.on('message', (data) => {
     console.log('Received message:', data);
     const message = JSON.parse(data);
     if (message.type === 'NEWEST_NEWS') {
-        console.log('Newest News:', message.data);
+        // console.log('Newest News:', message.data);
     }
 });
 

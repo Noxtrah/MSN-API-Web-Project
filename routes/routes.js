@@ -8,7 +8,7 @@ const sqlConnect = require('../databaseConfig/db');
 const { getNews } = require('../models/newsModel');
 // const jwtSecret = require('crypto').randomBytes(64).toString('hex');
 const { getUserByEmail } = require('../models/userModel');
-const { recommendNews, likeNews, dislikeNews, getCategorizedNews } = require('../models/newsModel');
+const { recommendNews, likeNews, dislikeNews, getCategorizedNews, getSearchedNews } = require('../models/newsModel');
 
 const router = express.Router();
 
@@ -159,5 +159,20 @@ router.get('/categorizedNews', async (req, res) => {
       res.status(500).send('Internal Server Error');
   }
 });
+
+router.get('/searchedNews', async (req, res) => {
+  try {
+      const searchQuery = req.query.searchQuery;
+      if (!searchQuery) {
+          return res.status(400).send('Search query parameter is required');
+      }
+      const news = await getSearchedNews(searchQuery);
+      res.json(news);
+  } catch(error) {
+      console.error('Error fetching searched news:', error);
+      res.status(500).send('Internal Server Error');
+  }
+
+})
 
 module.exports = router;

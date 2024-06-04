@@ -1,6 +1,7 @@
 //models/newsModel.js
 const sql = require('mssql');
 const sqlConnect = require('../databaseConfig/db');
+const { get } = require('../routes/routes');
 
 
 
@@ -124,10 +125,9 @@ async function getNewestNews(pool) {
     try {
         // Execute a SQL query to retrieve the newest news data
         const result = await pool.request().query('SELECT TOP 10 * FROM News ORDER BY Insertion_hour DESC');
-        
+
         // Extract the data from the SQL result
         const newestNewsData = result.recordset;
-        console.log('Newest news data:', newestNewsData);
 
         return newestNewsData;
     } catch (error) {
@@ -140,11 +140,23 @@ async function getCategorizedNews(category) {
     try {
         const pool = await sqlConnect();
         const request = pool.request();
-        request.input('Category', category);
         const result = await request.query('SELECT * FROM [dbo].[News] WHERE [Category] = @Category');
         return result.recordset;
     } catch (error) {
         console.error('Error fetching categorized news:', error);
+        throw error;
+    }
+}
+
+async function getSearchedNews(searchQuery) {
+    try {
+        const pool = await sqlConnect();
+        const request = pool.request();
+        request.input('SearchQuery', sql.NVarChar, searchQuery);
+        const result = await request.execute('SearchNews');
+        return result.recordset;
+    } catch (error) {
+        console.error('Error fetching searched news:', error);
         throw error;
     }
 }
@@ -155,5 +167,6 @@ module.exports = {
     dislikeNews,
     recommendNews,
     getNewestNews,
-    getCategorizedNews
+    getCategorizedNews,
+    getSearchedNews
 };

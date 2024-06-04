@@ -78,7 +78,7 @@ module.exports = (server) => {
       const pool = await sqlConnect();
       const newestNews = await getNewestNews(pool);
 
-      console.log('Newest News:', newestNews);
+      // console.log('Newest News:', newestNews);
 
       const message = JSON.stringify({ type: 'NEWEST_NEWS', data: newestNews });
       wss.clients.forEach((client) => {
@@ -91,5 +91,5 @@ module.exports = (server) => {
     }
   }
 
-  setInterval(broadcastNewestNews, 600000);
+  setInterval(broadcastNewestNews, 6000000);
 };
