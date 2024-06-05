@@ -140,6 +140,7 @@ async function getCategorizedNews(category) {
     try {
         const pool = await sqlConnect();
         const request = pool.request();
+        request.input('category', sql.NVarChar, category);
         const result = await request.query('SELECT * FROM [dbo].[News] WHERE [Category] = @Category');
         return result.recordset;
     } catch (error) {
