@@ -57,7 +57,7 @@ module.exports = (server) => {
   wss.on('connection', (ws) => {
     console.log('Client connected');
 
-    ws.send('Welcome to the chat, enjoy :)');
+    // ws.send('Welcome to the chat, enjoy :)');
 
     ws.on('message', (message) => {
       console.log('Received message:', message);
@@ -91,5 +91,5 @@ module.exports = (server) => {
     }
   }
 
-  setInterval(broadcastNewestNews, 6000000);
+  setInterval(broadcastNewestNews, 6000);
 };

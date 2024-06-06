@@ -124,7 +124,7 @@ async function recommendNews(userId, pool) {
 async function getNewestNews(pool) {
     try {
         // Execute a SQL query to retrieve the newest news data
-        const result = await pool.request().query('SELECT TOP 10 * FROM News ORDER BY Insertion_hour DESC');
+        const result = await pool.request().query('SELECT TOP 5 * FROM News ORDER BY Insertion_hour DESC');
 
         // Extract the data from the SQL result
         const newestNewsData = result.recordset;
