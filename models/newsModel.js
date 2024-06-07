@@ -21,7 +21,7 @@ async function getNews() {
 async function likeNews(userId, newsId, pool) {
     try {
         const likeCheckResult = await pool.request()
-            .input('UserID', sql.Int, userId)
+            .input('UserID', sql.NVarChar, userId) //for google this would be sub value
             .input('ContentID', sql.Int, newsId)
             .query('SELECT * FROM ContentInteractions WHERE UserID = @UserID AND ContentID = @ContentID AND InteractionType = \'like\'');
 
@@ -38,7 +38,7 @@ async function likeNews(userId, newsId, pool) {
 
         // Optionally, you can also log the interaction in ContentInteractions
         await pool.request()
-            .input('UserID', sql.Int, userId)
+            .input('UserID', sql.NVarChar, userId)
             .input('ContentID', sql.Int, newsId)
             .input('InteractionType', sql.NVarChar, 'like')
             .query('INSERT INTO ContentInteractions (UserID, ContentID, InteractionType) VALUES (@UserID, @ContentID, @InteractionType)');
@@ -54,7 +54,7 @@ async function dislikeNews(userId, newsId, pool) {
     try {
         // Check if the user has already interacted with the content
         const interactionCheckResult = await pool.request()
-            .input('UserID', sql.Int, userId)
+            .input('UserID', sql.NVarChar, userId)
             .input('ContentID', sql.Int, newsId)
             .query('SELECT * FROM ContentInteractions WHERE UserID = @UserID AND ContentID = @ContentID');
 
@@ -71,7 +71,7 @@ async function dislikeNews(userId, newsId, pool) {
 
         // Log the interaction in ContentInteractions
         await pool.request()
-            .input('UserID', sql.Int, userId)
+            .input('UserID', sql.NVarChar, userId)
             .input('ContentID', sql.Int, newsId)
             .input('InteractionType', sql.NVarChar, 'dislike')
             .query('INSERT INTO ContentInteractions (UserID, ContentID, InteractionType) VALUES (@UserID, @ContentID, @InteractionType)');
@@ -86,7 +86,7 @@ async function dislikeNews(userId, newsId, pool) {
 async function getUserPreferences(userId, pool) {
     try {
         const result = await pool.request()
-            .input('UserID', sql.Int, userId)
+            .input('UserID', sql.NVarChar, userId)
             .execute('GetUserPreferences');
 
         return result.recordset;
@@ -101,8 +101,8 @@ async function recommendNews(userId, pool) {
         const preferences = await getUserPreferences(userId, pool);
 
         if (preferences.length === 0) {
-            // No preferences found, return default recommendations
-            const result = await pool.request().query('SELECT TOP 10 * FROM News ORDER BY NEWID()');
+            // No preferences found, call the stored procedure for default recommendations
+            const result = await pool.request().execute('GetTopNewsOrderedByLikes');
             return result.recordset;
         }
 
