@@ -124,9 +124,20 @@ router.post('/news/dislike', async (req, res) => {
   }
 });
 
+// router.get('/news', async (req, res) => {
+//   try {
+//     const news = await getNews();
+//     res.status(200).json(news);
+//   } catch (err) {
+//     console.error('Error fetching news:', err);
+//     res.status(500).send('Server error');
+//   }
+// });
+
 router.get('/news', async (req, res) => {
   try {
-    const news = await getNews();
+    const language = req.query.language; // Assuming language parameter is passed as query parameter
+    const news = await getNews(language);
     res.status(200).json(news);
   } catch (err) {
     console.error('Error fetching news:', err);
@@ -137,8 +148,9 @@ router.get('/news', async (req, res) => {
 router.get('/recommendations', async (req, res) => {
   const { userID } = req.query;
   try {
+    const language = req.query.language;
       const pool = await sqlConnect();
-      const recommendations = await recommendNews(userID, pool);
+      const recommendations = await recommendNews(userID, pool, language);
       res.status(200).json(recommendations);
   } catch (error) {
       console.error('Error getting recommendations:', error);

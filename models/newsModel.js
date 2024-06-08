@@ -6,17 +6,38 @@ const { get } = require('../routes/routes');
 
 
 // Function to get news
-async function getNews() {
+// async function getNews() {
+//     try {
+//         const pool = await sqlConnect();
+//         const result = await pool.request().query('SELECT * FROM News');
+//         console.log('News fetched successfully:', result.recordset);
+//         return result.recordset;
+//     } catch (err) {
+//         console.error('Error fetching news:', err);
+//         throw err;
+//     }
+// }
+
+async function getNews(language) {
     try {
-        const pool = await sqlConnect();
-        const result = await pool.request().query('SELECT * FROM News');
-        console.log('News fetched successfully:', result.recordset);
-        return result.recordset;
+      const pool = await sqlConnect();
+      let query = '';
+  
+      // Construct SQL query based on language parameter
+      if (language && language.toLowerCase() === 'tr' || language.toLowerCase() === 'turkish') {
+        query = 'SELECT * FROM NewsTR';
+      } else {
+        query = 'SELECT * FROM News';
+      }
+  
+      const result = await pool.request().query(query);
+      console.log('News fetched successfully:', result.recordset);
+      return result.recordset;
     } catch (err) {
-        console.error('Error fetching news:', err);
-        throw err;
+      console.error('Error fetching news:', err);
+      throw err;
     }
-}
+  }
 
 async function likeNews(userId, newsId, pool) {
     try {
@@ -83,11 +104,19 @@ async function dislikeNews(userId, newsId, pool) {
     }
 }
 
-async function getUserPreferences(userId, pool) {
+async function getUserPreferences(userId, pool, language) {
     try {
+        let procedureName = 'GetUserPreferences'; // Default stored procedure name
+
+        // Determine the stored procedure based on the language parameter
+        if (language && language.toLowerCase() === 'tr' || language.toLowerCase() === 'turkish') {
+            procedureName = 'GetUserPreferencesTR'; // Use TR version for Turkish
+        }
+
+        // Execute the selected stored procedure
         const result = await pool.request()
             .input('UserID', sql.NVarChar, userId)
-            .execute('GetUserPreferences');
+            .execute(procedureName);
 
         return result.recordset;
     } catch (err) {
@@ -96,9 +125,9 @@ async function getUserPreferences(userId, pool) {
     }
 }
 
-async function recommendNews(userId, pool) {
+async function recommendNews(userId, pool, language) {
     try {
-        const preferences = await getUserPreferences(userId, pool);
+        const preferences = await getUserPreferences(userId, pool, language);
 
         if (preferences.length === 0) {
             // No preferences found, call the stored procedure for default recommendations
@@ -110,9 +139,19 @@ async function recommendNews(userId, pool) {
         const topCategory = preferences[0].Category;
 
         // Recommend news from the top preferred category
-        const result = await pool.request()
+        if(language && language.toLowerCase() === 'tr' || language.toLowerCase() === 'turkish'){
+            const result = await pool.request()
+            .input('Category', sql.NVarChar, topCategory)
+            .query('SELECT TOP 10 * FROM NewsTR WHERE Category = @Category ORDER BY NEWID()');
+            return result.recordset;
+        }
+        else if (language && language.toLowerCase() === 'en' || language.toLowerCase() === 'english'){
+            const result = await pool.request()
             .input('Category', sql.NVarChar, topCategory)
             .query('SELECT TOP 10 * FROM News WHERE Category = @Category ORDER BY NEWID()');
+            return result.recordset;
+
+        }
 
         return result.recordset;
     } catch (err) {
