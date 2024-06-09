@@ -162,10 +162,12 @@ router.get('/recommendations', async (req, res) => {
 router.get('/categorizedNews', async (req, res) => {
   try {
       const category = req.query.category;
+      const userId = req.query.userID;
+
       if (!category) {
           return res.status(400).send('Category query parameter is required');
       }
-      const news = await getCategorizedNews(category);
+      const news = await getCategorizedNews(category, userId);
       res.json(news);
   } catch (error) {
       console.error('Error fetching categorized news:', error);
@@ -176,10 +178,12 @@ router.get('/categorizedNews', async (req, res) => {
 router.get('/searchedNews', async (req, res) => {
   try {
       const searchQuery = req.query.searchQuery;
+      const userId = req.query.userID;
+
       if (!searchQuery) {
           return res.status(400).send('Search query parameter is required');
       }
-      const news = await getSearchedNews(searchQuery);
+      const news = await getSearchedNews(searchQuery, userId);
       res.json(news);
   } catch(error) {
       console.error('Error fetching searched news:', error);
