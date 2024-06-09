@@ -266,22 +266,33 @@ async function getSearchedNews(searchQuery, userID) {
         const pool = await sqlConnect();
         const request = pool.request();
 
-        // Define the search stored procedure
-        const searchProcedure = 'SearchNews'; // Ensure this stored procedure handles the LIKE functionality and returns the necessary columns
+        // Execute the stored procedure to get the searched news
+        request.input('SearchQuery', sql.NVarChar, searchQuery);
+        const searchResult = await request.execute('SearchNews');
+        const searchedNews = searchResult.recordset;
 
-        let query = `
-            EXEC ${searchProcedure} @SearchQuery;
-            SELECT News.*,
-                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'like') THEN 1 ELSE 0 END AS isLiked,
-                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'dislike') THEN 1 ELSE 0 END AS isDisliked
-            FROM News`;
+        // Fetch isLiked and isDisliked information for each news article
+        for (let i = 0; i < searchedNews.length; i++) {
+            const newsID = searchedNews[i].NewsID;
 
-        const result = await request
-            .input('SearchQuery', sql.NVarChar, searchQuery)
-            .input('UserID', sql.NVarChar, userID)
-            .query(query);
+            // Check if the news article is liked by the user
+            const isLikedResult = await pool.request()
+                .input('UserID', sql.NVarChar, userID)
+                .input('ContentID', sql.Int, newsID)
+                .input('InteractionType', sql.NVarChar, 'like')
+                .query('SELECT COUNT(*) AS likedCount FROM ContentInteractions WHERE UserID = @UserID AND ContentID = @ContentID AND InteractionType = @InteractionType');
+            searchedNews[i].isLiked = isLikedResult.recordset[0].likedCount > 0 ? 1 : 0;
 
-        return result.recordsets[1]; // Assuming the second result set contains the searched news
+            // Check if the news article is disliked by the user
+            const isDislikedResult = await pool.request()
+                .input('UserID', sql.NVarChar, userID)
+                .input('ContentID', sql.Int, newsID)
+                .input('InteractionType', sql.NVarChar, 'dislike')
+                .query('SELECT COUNT(*) AS dislikedCount FROM ContentInteractions WHERE UserID = @UserID AND ContentID = @ContentID AND InteractionType = @InteractionType');
+            searchedNews[i].isDisliked = isDislikedResult.recordset[0].dislikedCount > 0 ? 1 : 0;
+        }
+
+        return searchedNews;
     } catch (error) {
         console.error('Error fetching searched news:', error);
         throw error;
