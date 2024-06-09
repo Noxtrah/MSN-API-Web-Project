@@ -290,8 +290,8 @@ async function getSearchedNews(searchQuery, userID) {
                 .input('InteractionType', sql.NVarChar, 'dislike')
                 .query('SELECT COUNT(*) AS dislikedCount FROM ContentInteractions WHERE UserID = @UserID AND ContentID = @ContentID AND InteractionType = @InteractionType');
             searchedNews[i].isDisliked = isDislikedResult.recordset[0].dislikedCount > 0 ? 1 : 0;
+            // Inside the for loop where isLiked and isDisliked are checked
         }
-
         return searchedNews;
     } catch (error) {
         console.error('Error fetching searched news:', error);
