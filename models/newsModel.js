@@ -270,22 +270,24 @@ async function getSearchedNews(searchQuery, userID) {
         const searchProcedure = 'SearchNews'; // Ensure this stored procedure handles the LIKE functionality and returns the necessary columns
 
         let query = `
+            EXEC ${searchProcedure} @SearchQuery;
             SELECT News.*,
                 CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'like') THEN 1 ELSE 0 END AS isLiked,
                 CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'dislike') THEN 1 ELSE 0 END AS isDisliked
-            FROM (EXECUTE ${searchProcedure} @SearchQuery) AS News`;
+            FROM News`;
 
         const result = await request
             .input('SearchQuery', sql.NVarChar, searchQuery)
             .input('UserID', sql.NVarChar, userID)
             .query(query);
 
-        return result.recordset;
+        return result.recordsets[1]; // Assuming the second result set contains the searched news
     } catch (error) {
         console.error('Error fetching searched news:', error);
         throw error;
     }
 }
+
 
 
 module.exports = {
