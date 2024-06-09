@@ -1,6 +1,12 @@
-Deployment Link:
-
 Video Link:
+https://drive.google.com/file/d/120V2Jf1965VRLTQXZGuF0l0pDfg3VpYm/view?usp=sharing
+
+Backend Deployment Link:
+https://msn-api-web-project.onrender.com
+
+Frontend Deployment Link:
+https://news-web-project.vercel.app
+
 
 Notes:
 -After clicking on a news, you will be directed to the news detail page. Changing the language you make here will not change the content of the news in detail page.

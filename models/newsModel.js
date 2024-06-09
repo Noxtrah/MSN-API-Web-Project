@@ -208,12 +208,39 @@ async function getNewestNews(pool) {
     }
 }
 
-async function getCategorizedNews(category) {
+// async function getCategorizedNews(category) {
+//     try {
+//         const pool = await sqlConnect();
+//         const request = pool.request();
+//         request.input('category', sql.NVarChar, category);
+//         const result = await request.query('SELECT * FROM [dbo].[News] WHERE [Category] = @Category');
+//         return result.recordset;
+//     } catch (error) {
+//         console.error('Error fetching categorized news:', error);
+//         throw error;
+//     }
+// }
+
+async function getCategorizedNews(category, userID) {
     try {
         const pool = await sqlConnect();
         const request = pool.request();
-        request.input('category', sql.NVarChar, category);
-        const result = await request.query('SELECT * FROM [dbo].[News] WHERE [Category] = @Category');
+
+        // Determine which table to use based on the category
+        const newsTable = 'News'; // Adjust if you have different tables for different categories
+
+        let query = `
+            SELECT ${newsTable}.*,
+                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = ${newsTable}.NewsID AND UserID = @UserID AND InteractionType = 'like') THEN 1 ELSE 0 END AS isLiked,
+                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = ${newsTable}.NewsID AND UserID = @UserID AND InteractionType = 'dislike') THEN 1 ELSE 0 END AS isDisliked
+            FROM ${newsTable}
+            WHERE [Category] = @Category`;
+
+        const result = await request
+            .input('category', sql.NVarChar, category)
+            .input('UserID', sql.NVarChar, userID)
+            .query(query);
+
         return result.recordset;
     } catch (error) {
         console.error('Error fetching categorized news:', error);
@@ -221,18 +248,45 @@ async function getCategorizedNews(category) {
     }
 }
 
-async function getSearchedNews(searchQuery) {
+// async function getSearchedNews(searchQuery) {
+//     try {
+//         const pool = await sqlConnect();
+//         const request = pool.request();
+//         request.input('SearchQuery', sql.NVarChar, searchQuery);
+//         const result = await request.execute('SearchNews');
+//         return result.recordset;
+//     } catch (error) {
+//         console.error('Error fetching searched news:', error);
+//         throw error;
+//     }
+// }
+
+async function getSearchedNews(searchQuery, userID) {
     try {
         const pool = await sqlConnect();
         const request = pool.request();
-        request.input('SearchQuery', sql.NVarChar, searchQuery);
-        const result = await request.execute('SearchNews');
+
+        // Define the search stored procedure
+        const searchProcedure = 'SearchNews'; // Ensure this stored procedure handles the LIKE functionality and returns the necessary columns
+
+        let query = `
+            SELECT News.*,
+                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'like') THEN 1 ELSE 0 END AS isLiked,
+                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'dislike') THEN 1 ELSE 0 END AS isDisliked
+            FROM (EXECUTE ${searchProcedure} @SearchQuery) AS News`;
+
+        const result = await request
+            .input('SearchQuery', sql.NVarChar, searchQuery)
+            .input('UserID', sql.NVarChar, userID)
+            .query(query);
+
         return result.recordset;
     } catch (error) {
         console.error('Error fetching searched news:', error);
         throw error;
     }
 }
+
 
 module.exports = {
     getNews,
