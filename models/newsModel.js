@@ -42,12 +42,15 @@ const { get } = require('../routes/routes');
 async function getNews(language, userID) {
     try {
         const pool = await sqlConnect();
-        let query = `
-   SELECT News.*,
-                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'like') THEN 1 ELSE 0 END AS isLiked,
-                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'dislike') THEN 1 ELSE 0 END AS isDisliked
-            FROM News`;
+        
+        // Determine which table to use based on the language
+        const newsTable = language === 'tr' ? 'NewsTR' : 'News';
 
+        let query = `
+            SELECT ${newsTable}.*,
+                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = ${newsTable}.NewsID AND UserID = @UserID AND InteractionType = 'like') THEN 1 ELSE 0 END AS isLiked,
+                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = ${newsTable}.NewsID AND UserID = @UserID AND InteractionType = 'dislike') THEN 1 ELSE 0 END AS isDisliked
+            FROM ${newsTable}`;
 
         const result = await pool.request()
             .input('UserID', sql.NVarChar, userID)

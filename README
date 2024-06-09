@@ -6,7 +6,12 @@ Notes:
 -After clicking on a news, you will be directed to the news detail page. Changing the language you make here will not change the content of the news in detail page.
 Because I'm not making a new fetch call on that page.
 -I may not have translated some words I missed.
--After like or dislike a news, users need to refresh the page to see the changes. Because I'm not making a new fetch call on detail page.
+-After like or dislike a news, if users refresh the page they can't see their like or dislike until go back to dashboard and enter to the same news detail page.
+This is because I don't make a news fetch call in detailPages, I just use the data from the url which is filled in the dashboard. When users liked/disliked without refreshing
+the page they can see changes because of I increase it in client-side temporarily. The reason why the news fetch calls is not used on detail pages is to reduce the number of requests and db usage. (I use paid db)
+-Users might see an error flag at the bottom left when switched the language to the turkish. It is becuase pre-render ability of react. Some html element rendered in english
+initially and doesn't match when switched to turkish. This error doesn't affect the user experience. For now I haven't found a way to hide/fix the error
+
 
 
 
