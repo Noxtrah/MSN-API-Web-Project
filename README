@@ -3,8 +3,12 @@ Deployment Link:
 Video Link:
 
 Notes:
--After clicking on a news, you will be directed to the news detail page. Changing the language you make here will not change the content of the news. Because I'm not making a new fetch call on that page.
+-After clicking on a news, you will be directed to the news detail page. Changing the language you make here will not change the content of the news in detail page.
+Because I'm not making a new fetch call on that page.
 -I may not have translated some words I missed.
+-After like or dislike a news, users need to refresh the page to see the changes. Because I'm not making a new fetch call on detail page.
+
+
 
 Brief Description:
 1-) There are two type of sign-in. Local sign-in or Google sign-in.

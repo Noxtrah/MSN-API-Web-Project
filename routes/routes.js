@@ -136,8 +136,9 @@ router.post('/news/dislike', async (req, res) => {
 
 router.get('/news', async (req, res) => {
   try {
-    const language = req.query.language; // Assuming language parameter is passed as query parameter
-    const news = await getNews(language);
+    const language = req.query.language;
+    const userId = req.query.userID;
+    const news = await getNews(language, userId);
     res.status(200).json(news);
   } catch (err) {
     console.error('Error fetching news:', err);

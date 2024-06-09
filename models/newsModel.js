@@ -18,26 +18,48 @@ const { get } = require('../routes/routes');
 //     }
 // }
 
-async function getNews(language) {
+// async function getNews(language) {
+//     try {
+//       const pool = await sqlConnect();
+//       let query = '';
+  
+//       // Construct SQL query based on language parameter
+//       if (language && language.toLowerCase() === 'tr' || language.toLowerCase() === 'turkish') {
+//         query = 'SELECT * FROM NewsTR';
+//       } else {
+//         query = 'SELECT * FROM News';
+//       }
+  
+//       const result = await pool.request().query(query);
+//       console.log('News fetched successfully:', result.recordset);
+//       return result.recordset;
+//     } catch (err) {
+//       console.error('Error fetching news:', err);
+//       throw err;
+//     }
+//   }
+
+async function getNews(language, userID) {
     try {
-      const pool = await sqlConnect();
-      let query = '';
-  
-      // Construct SQL query based on language parameter
-      if (language && language.toLowerCase() === 'tr' || language.toLowerCase() === 'turkish') {
-        query = 'SELECT * FROM NewsTR';
-      } else {
-        query = 'SELECT * FROM News';
-      }
-  
-      const result = await pool.request().query(query);
-      console.log('News fetched successfully:', result.recordset);
-      return result.recordset;
+        const pool = await sqlConnect();
+        let query = `
+   SELECT News.*,
+                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'like') THEN 1 ELSE 0 END AS isLiked,
+                CASE WHEN EXISTS (SELECT 1 FROM ContentInteractions WHERE ContentID = News.NewsID AND UserID = @UserID AND InteractionType = 'dislike') THEN 1 ELSE 0 END AS isDisliked
+            FROM News`;
+
+
+        const result = await pool.request()
+            .input('UserID', sql.NVarChar, userID)
+            .query(query);
+
+        console.log('News fetched successfully:', result.recordset);
+        return result.recordset;
     } catch (err) {
-      console.error('Error fetching news:', err);
-      throw err;
+        console.error('Error fetching news:', err);
+        throw err;
     }
-  }
+}
 
 async function likeNews(userId, newsId, pool) {
     try {
@@ -56,6 +78,10 @@ async function likeNews(userId, newsId, pool) {
         await pool.request()
             .input('NewsID', sql.Int, newsId)
             .query('UPDATE news SET Like_count = Like_count + 1 WHERE NewsID = @NewsID');
+
+        await pool.request()
+            .input('NewsID', sql.Int, newsId)
+            .query('UPDATE NewsTR SET Like_count = Like_count + 1 WHERE NewsID = @NewsID');
 
         // Optionally, you can also log the interaction in ContentInteractions
         await pool.request()
@@ -89,6 +115,10 @@ async function dislikeNews(userId, newsId, pool) {
         await pool.request()
             .input('NewsID', sql.Int, newsId)
             .query('UPDATE news SET Dislike_count = Dislike_count + 1 WHERE NewsID = @NewsID');
+
+        await pool.request()
+            .input('NewsID', sql.Int, newsId)
+            .query('UPDATE newsTR SET Dislike_count = Dislike_count + 1 WHERE NewsID = @NewsID');
 
         // Log the interaction in ContentInteractions
         await pool.request()
