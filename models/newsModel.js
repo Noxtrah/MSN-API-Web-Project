@@ -221,13 +221,14 @@ async function getNewestNews(pool) {
 //     }
 // }
 
-async function getCategorizedNews(category, userID) {
+async function getCategorizedNews(category, userID, language) {
     try {
+        console.log('Parameters:', category, userID, language);
         const pool = await sqlConnect();
         const request = pool.request();
 
-        // Determine which table to use based on the category
-        const newsTable = 'News'; // Adjust if you have different tables for different categories
+        // Determine which table to use based on the category and language
+        const newsTable = language === 'tr' ? 'NewsTR' : 'News';
 
         let query = `
             SELECT ${newsTable}.*,
@@ -247,6 +248,7 @@ async function getCategorizedNews(category, userID) {
         throw error;
     }
 }
+
 
 // async function getSearchedNews(searchQuery) {
 //     try {

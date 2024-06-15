@@ -163,11 +163,13 @@ router.get('/categorizedNews', async (req, res) => {
   try {
       const category = req.query.category;
       const userId = req.query.userID;
+      const language = req.query.language;
+
 
       if (!category) {
           return res.status(400).send('Category query parameter is required');
       }
-      const news = await getCategorizedNews(category, userId);
+      const news = await getCategorizedNews(category, userId, language);
       res.json(news);
   } catch (error) {
       console.error('Error fetching categorized news:', error);
